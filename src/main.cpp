@@ -26,35 +26,34 @@
 
 
 // Use this line for a breakout with a software SPI connection
-Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
+// Declare the Adafruit Object as breakOut
+Adafruit_PN532 breakOut(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 
 
-#if defined(ARDUINO_ARCH_SAMD)
-// for Zero, output on USB Serial console, remove line below if using programming port to program the Zero!
-// also change #define in Adafruit_PN532.cpp library file
-   #define Serial SerialUSB
-#endif
 
 void setup(void) {
 
     Serial.begin(115200);
-    Serial.println("Sahili v1.0");
+    Serial.println("BreakOut v1.0");
     Serial.println("Attempting to locate chip");
 
-    nfc.begin();
+    // Initialize Adafruit Object as nfc
+    breakOut.begin();
 
-    uint32_t versiondata = nfc.getFirmwareVersion();
+    uint32_t versiondata = breakOut.getFirmwareVersion();
     if (! versiondata) {
-        Serial.print("Didn't find PN532 board");
+        Serial.println("Didn't find PN532 board");
+        Serial.print("Ascertain all physical connections");
         while (1); // halt
     }
-    // Got ok data, print it out!
+    // Upon successful retrieval of data...
+    // Print out some info about the board
     Serial.print("Found chip PN532"); Serial.println((versiondata>>24) & 0xFF, HEX);
-    Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC);
+    Serial.print("Firmware version: "); Serial.print((versiondata>>16) & 0xFF, DEC);
     Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
 
     // configure board to read RFID tags
-    nfc.SAMConfig();
+    breakOut.SAMConfig();
 
     Serial.println("Waiting for an ISO14443A Card ...");
 }
