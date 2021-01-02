@@ -37,7 +37,7 @@ void setup(void) {
     Serial.println("BreakOut v1.0");
     Serial.println("Attempting to locate chip");
 
-    // Initialize Adafruit Object as nfc
+    // Initialize Adafruit Object as breakOut
     breakOut.begin();
 
     uint32_t versiondata = breakOut.getFirmwareVersion();
@@ -60,21 +60,23 @@ void setup(void) {
 
 
 void loop(void) {
-    uint8_t success;
-    uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-    uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
+    // Declare variables
+    int success;
+    int uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
+    int uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
 
     // Wait for an ISO14443A type cards.  When one is found
     // 'uid' will be populated with the UID, and uidLength will indicate
     // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
-    success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+    
+    success = breakOut.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
 
     if (success) {
         // Display some basic information about the card
         Serial.println("Splendid! Found an ISO14443A card");
         Serial.print("  UID Length: ");Serial.print(uidLength, DEC);Serial.println(" bytes");
         Serial.print("  UID Value: ");
-        nfc.PrintHex(uid, uidLength);
+        breakOut.PrintHex(uid, uidLength);
         Serial.println("");
 
         if (uidLength == 4)
@@ -90,7 +92,7 @@ void loop(void) {
             // Start with block 4 (the first block of sector 1) since sector 0
             // contains the manufacturer data and it's probably better just
             // to leave it alone unless you know what you're doing
-            success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, 4, 0, keya);
+            success = breakOut.mifareclassic_AuthenticateBlock(uid, uidLength, 4, 0, keya);
 
             if (success)
             {
@@ -100,16 +102,16 @@ void loop(void) {
                 // If you want to write something to block 4 to test with, uncomment
                 // the following line and this text should be read back in a minute
                 //memcpy(data, (const uint8_t[]){ 'P', 'A', 'V', 'E', ' ', 'S', 'L', 'N', ' ', 'C', 'A', 'R', 'D', ' ', 'I', 'D' }, sizeof data);
-                //success = nfc.mifareclassic_WriteDataBlock (4, data);
+                //success = breakOut.mifareclassic_WriteDataBlock (4, data);
 
                 // Try to read the contents of block 4
-                success = nfc.mifareclassic_ReadDataBlock(4, data);
+                success = breakOut.mifareclassic_ReadDataBlock(4, data);
 
                 if (success)
                 {
                     // Data seems to have been read ... spit it out
                     Serial.println("Reading Block 4:");
-                    nfc.PrintHexChar(data, 16);
+                    breakOut.PrintHexChar(data, 16);
                     Serial.println("");
 
                     // Wait a bit before reading the card again
